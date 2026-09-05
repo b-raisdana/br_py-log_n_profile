@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  br-logging:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./br_py_log_n_profile:/app/br_py_log_n_profile
+    environment:
+      - PYTHONUNBUFFERED=1

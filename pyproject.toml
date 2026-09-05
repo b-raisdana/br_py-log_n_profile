@@ -1,0 +1,78 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "br-logging-and-profiling"
+version = "0.1.0"
+description = "Loguru-based logging facade, correlation IDs, and profiling decorator extracted from Forecasting-sidecar3."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12"
+authors = [{ name = "Brais Diaz" }]
+keywords = ["logging", "profiling", "loguru", "colorama", "ray-id"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "loguru>=0.7.0",
+    "colorama>=0.4.6",
+    "pandas>=2.0",
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit",
+    "pytest>=7.0",
+    "mypy>=1.0",
+    "ruff>=0.6",
+    "gitpython",
+]
+
+[project.urls]
+Homepage = "https://github.com/brais/br-logging-and-profiling"
+Repository = "https://github.com/brais/br-logging-and-profiling"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["br_py_log_n_profile*"]
+
+[tool.setuptools.package-data]
+br_py_log_n_profile = ["py.typed"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+extend-exclude = ["*.ipynb", ".testvenv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C4", "SIM", "W"]
+
+[tool.mypy]
+python_version = "3.12"
+explicit_package_bases = true
+strict = true
+disallow_any_explicit = true
+no_implicit_optional = true
+warn_return_any = true
+ignore_missing_imports = true
+follow_imports = "silent"
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+pythonpath = ["."]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-ra --strict-markers --import-mode=importlib"
+markers = [
+    "unit: fast, isolated, no I/O",
+    "integration: multiple modules/stages wired together",
+    "contract: validates public API contract against installed package",
+]

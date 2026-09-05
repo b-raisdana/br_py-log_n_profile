@@ -1,0 +1,44 @@
+exclude: ^tests/integration/.*\.py$
+
+ci:
+  autofix_commits: true
+  autoupdate_schedule: monthly
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: debug-statements
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.2
+    hooks:
+      - id: ruff
+        args: ["--fix", "--exit-zero"]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: pytest-fast
+        name: pytest unit gate
+        language: system
+        entry: python -m pytest -m unit
+        pass_filenames: false
+        files: ^(br_py_log_n_profile/.*\.py|pytest\.ini)$
+
+      - id: no-commit-to-main
+        name: block direct commits to main
+        language: system
+        entry: bash -c 'branch="$(git rev-parse --abbrev-ref HEAD)"; if [ "$branch" = "main" ]; then echo "Direct commits to main are not allowed. Create a feature branch."; exit 1; fi'
+        pass_filenames: false
+        always_run: true
