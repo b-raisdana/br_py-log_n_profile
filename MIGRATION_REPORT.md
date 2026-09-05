@@ -191,30 +191,42 @@ Remote: `git@github.com:b-raisdana/DL-Forecasting.git` (branch `churn/move_loggi
 
 ---
 
-## Step 12 — Package release readiness
+## Step 12 — PyPI publication
 
-Package is built and installable locally:
+Published `br-logging-and-profiling==0.1.0` to PyPI:
 
-- Wheel: `dist/br_logging_and_profiling-0.1.0-py3-none-any.whl`
-- Sdist: `dist/br_logging_and_profiling-0.1.0.tar.gz`
-- PyPI name: `br-logging-and-profiling`
+```bash
+cd br_py-log_n_profile
+python -m twine upload dist/*
+```
+
+- PyPI project: https://pypi.org/project/br-logging-and-profiling/0.1.0/
+- Package name: `br-logging-and-profiling`
 - Version: `0.1.0`
 - License: MIT
 - Python: `>=3.12`
 - Dependencies: `loguru>=0.7.0`, `colorama>=0.4.6`, `pandas>=2.0`, `numpy>=1.24,<2.2`
 
-To publish to PyPI:
+---
+
+## Step 13 — Forecasting-sidecar3 dependency update
+
+Updated `Forecasting-sidecar3/requirements.txt`:
+
+- Added `br-logging-and-profiling>=0.1.0`
+- Removed duplicate `Loguru==0.7.3` and `colorama==0.4.6` entries (now provided by the package)
+
+Verified install in the `tf` conda env:
 
 ```bash
-python -m pip install twine
-python -m twine upload dist/*
+python -m pip install --upgrade br-logging-and-profiling
 ```
 
-Requires PyPI API token configured in `~/.pypirc`.
+Verified all 44 contract + unit tests pass against the published package.
 
 ---
 
-## Step 13 — Documentation
+## Step 14 — Documentation
 
 - `br_py-log_n_profile/README.md` — package purpose, current state, planned OTel migration phases, install/dev instructions
 - `br_py-log_n_profile/CHANGELOG.md` — detailed 0.1.0 release notes
@@ -232,8 +244,10 @@ Requires PyPI API token configured in `~/.pypirc`.
 | Contract tests added in Forecasting-sidecar3 | ✅ (29 tests) |
 | Unit tests added in new project | ✅ |
 | Package built and installed locally | ✅ |
+| Published to PyPI as `br-logging-and-profiling==0.1.0` | ✅ |
 | Forecasting-sidecar3 imports upgraded via shims | ✅ |
 | Legacy import paths preserved | ✅ |
+| Forecasting-sidecar3 requirements updated | ✅ |
 | Pre-commit passes (new project) | ✅ |
 | Pre-commit passes (Forecasting-sidecar3, excluding pre-existing disk_cache failures) | ✅ |
 | Both repos pushed to remote | ✅ |
