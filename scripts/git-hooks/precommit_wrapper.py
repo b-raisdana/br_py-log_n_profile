@@ -124,8 +124,7 @@ def main() -> int:
 
     if advisory_lint_warnings:
         sys.stdout.write(
-            f"warning: {len(advisory_lint_warnings)} advisory lint finding(s) in staged files "
-            "(non-blocking):\n"
+            f"warning: {len(advisory_lint_warnings)} advisory lint finding(s) in staged files (non-blocking):\n"
         )
         for hit in advisory_lint_warnings:
             sys.stdout.write(f"  {hit['file']}:{hit['line']} {hit['code']} {hit['message']}\n")
