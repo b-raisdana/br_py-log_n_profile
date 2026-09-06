@@ -1,6 +1,7 @@
 import time
 from collections.abc import Callable
 from functools import wraps
+from inspect import signature
 
 import numpy as np
 import pandas as pd
@@ -33,6 +34,11 @@ def profile_it[**P, R](func: Callable[P, R]) -> Callable[P, R]:
         )
         return result
 
+    # ``wraps`` exposes ``func`` through ``__wrapped__``, which is enough for
+    # ``inspect.signature`` by default.  Store the signature too so consumers
+    # that deliberately inspect this wrapper without unwrapping still see the
+    # decorated callable's public interface.
+    _measure_time.__signature__ = signature(func)  # type: ignore[attr-defined]
     return _measure_time
 
 

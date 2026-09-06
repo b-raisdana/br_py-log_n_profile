@@ -1,3 +1,5 @@
+import inspect
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -70,3 +72,10 @@ class TestProfileIt:
         finally:
             logger.remove(sink_id)
         assert any("my_function" in s for s in sink)
+
+    def test_profile_it_preserves_signature_without_unwrapping(self):
+        @profile_it
+        def my_function(first: int, /, second: str, *, enabled: bool = True) -> None:
+            pass
+
+        assert inspect.signature(my_function, follow_wrapped=False) == inspect.signature(my_function.__wrapped__)
