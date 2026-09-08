@@ -28,8 +28,12 @@ if [[ -z "${CURRENT_VERSION}" ]]; then
     exit 1
 fi
 
-# Bump version (default: patch)
-BUMP_TYPE="${1:-patch}"
+# Require an explicit release type; accept it as an argument or prompt for it.
+BUMP_TYPE="${1:-}"
+while [[ -z "${BUMP_TYPE}" ]]; do
+    read -r -p "Release type (major/minor/bug fix): " BUMP_TYPE
+done
+
 MAJOR=$(echo "${CURRENT_VERSION}" | cut -d. -f1)
 MINOR=$(echo "${CURRENT_VERSION}" | cut -d. -f2)
 PATCH=$(echo "${CURRENT_VERSION}" | cut -d. -f3)
@@ -44,11 +48,11 @@ case "${BUMP_TYPE}" in
         MINOR=$((MINOR + 1))
         PATCH=0
         ;;
-    patch)
+    "bug fix" | bugfix | patch)
         PATCH=$((PATCH + 1))
         ;;
     *)
-        echo "ERROR: Invalid bump type '${BUMP_TYPE}'. Use: major, minor, or patch"
+        echo "ERROR: Invalid release type '${BUMP_TYPE}'. Use: major, minor, or bug fix"
         exit 1
         ;;
 esac
