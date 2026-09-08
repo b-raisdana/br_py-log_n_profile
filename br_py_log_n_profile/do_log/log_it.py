@@ -21,7 +21,7 @@ __log_to_std_out_level = logging.DEBUG
 __log_to_file_level = 0
 __min_log_level = __log_to_std_out_level
 
-__all__ = ["log_d", "log_e", "log_i", "log_w"]
+__all__ = ["log_d", "log_e", "log_i", "log_w", "log_exception"]
 
 _NAMED_LEVEL_THRESHOLDS = (
     (logging.CRITICAL, "CRITICAL"),
@@ -126,6 +126,16 @@ def log_i(message: str, stack_limit: int = 0, stack_offset: int = 0) -> None:
 
 def log_e(message: str, stack_limit: int = 0, stack_offset: int = 0) -> None:
     log(message, logging.ERROR, stack_limit, stack_offset + 1)
+
+
+def log_exception(
+    message: str,
+    exception_class: type[Exception],
+    stack_limit: int = 0,
+    stack_offset: int = 0,
+) -> Exception:
+    log_e(message, stack_limit, stack_offset + 1)
+    raise exception_class(message)
 
 
 def log(message: str, severity: int, stack_limit: int = 0, stack_offset: int = 0) -> None:

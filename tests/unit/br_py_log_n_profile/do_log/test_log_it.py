@@ -3,7 +3,7 @@ import logging
 import pytest
 from loguru import logger
 
-from br_py_log_n_profile.do_log.log_it import _nearest_level_name, log
+from br_py_log_n_profile.do_log.log_it import _nearest_level_name, log, log_exception
 
 
 @pytest.mark.unit
@@ -71,3 +71,44 @@ class TestLogStackTrace:
         assert message.count('File "') == 1
         assert "in _level_2" in message
         assert "in _level_3" not in message
+
+
+@pytest.mark.unit
+class TestLogRaise:
+    def _captured_message(self, **kwargs: int) -> str:
+        sink: list[str] = []
+        sink_id = logger.add(sink.append, format="{message}")
+        try:
+            with pytest.raises(ValueError):
+                _level_2_log_exception(**kwargs)
+        finally:
+            logger.remove(sink_id)
+        return sink[0]
+
+    def test_raises_specified_exception_with_message(self) -> None:
+        with pytest.raises(ValueError, match="boom"):
+            log_exception("boom", ValueError, stack_limit=0)
+
+    def test_logs_message_at_error_level(self) -> None:
+        message = self._captured_message(stack_limit=0)
+        assert "boom" in message
+
+    def test_stack_offset_applied_correctly(self) -> None:
+        sink: list[str] = []
+        sink_id = logger.add(sink.append, format="{message}")
+        try:
+            with pytest.raises(ValueError):
+                _level_2_log_exception(stack_limit=1, stack_offset=1)
+        finally:
+            logger.remove(sink_id)
+        message = sink[0]
+        assert message.count('File "') == 1
+        assert "in _level_2_log_exception" in message
+
+
+def _level_2_log_exception(stack_limit: int, stack_offset: int = 0) -> None:
+    _level_3_log_exception(stack_limit, stack_offset)
+
+
+def _level_3_log_exception(stack_limit: int, stack_offset: int) -> None:
+    log_exception("boom", ValueError, stack_limit, stack_offset)
