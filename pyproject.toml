@@ -5,8 +5,8 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "br-logging-and-profiling"
 version = "0.5.2"
+dynamic = ["readme"]
 description = "Loguru-based logging facade, correlation IDs, and profiling decorator extracted from Forecasting-sidecar3."
-readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.12"
 authors = [{ name = "Brais Diaz" }]
@@ -45,6 +45,9 @@ include = ["br_py_log_n_profile*"]
 
 [tool.setuptools.package-data]
 br_py_log_n_profile = ["py.typed"]
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md", "CHANGELOG.md"], content-type = "text/markdown"}
 
 [tool.ruff]
 target-version = "py312"

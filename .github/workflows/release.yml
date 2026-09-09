@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify on main
+        run: |
+          BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          if [[ "${BRANCH}" != "main" ]]; then
+            echo "ERROR: Not on main branch (current: ${BRANCH})"
+            exit 1
+          fi
+
+      - name: Install build dependencies
+        run: |
+          pip install build twine setuptools wheel
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [[ -z "${LAST_TAG}" ]]; then
+            CHANGELOG=$(git log --oneline --graph --decorate)
+          else
+            CHANGELOG=$(git log --oneline --graph --decorate ${LAST_TAG}..HEAD)
+          fi
+          echo "body<<EOF" >> "$GITHUB_OUTPUT"
+          echo "${CHANGELOG}" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Update CHANGELOG.md
+        run: |
+          python3 - << 'PYEOF'
+          import re
+          import sys
+          from datetime import date
+
+          with open('CHANGELOG.md', 'r') as f:
+              content = f.read()
+
+          with open('pyproject.toml', 'r') as f:
+              pyproject = f.read()
+
+          version_match = re.search(r'^version = "([^"]+)"', pyproject, re.MULTILINE)
+          if not version_match:
+              print("ERROR: Could not find version in pyproject.toml")
+              sys.exit(1)
+
+          new_version = version_match.group(1)
+          today = date.today().isoformat()
+
+          log_body = """${{ steps.changelog.outputs.body }}"""
+
+          new_section = f"## [{new_version}] - {today}\n\n### Added\n\n- \n\n### Changed\n\n- \n\n### Fixed\n\n- \n\n{log_body}"
+
+          pattern = rf'## \[{re.escape(new_version)}\] - .*?(?=\n## \[|$)'
+          content = re.sub(pattern, '', content, flags=re.DOTALL)
+
+          content = content.replace('# Changelog', f'# Changelog\n\n{new_section}', 1)
+
+          with open('CHANGELOG.md', 'w') as f:
+              f.write(content)
+          PYEOF
+
+          VERSION=$(grep -E '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          git add CHANGELOG.md pyproject.toml
+          git commit -m "chore: update changelog for v${VERSION}" || true
+          git push || true
+
+      - name: Build package
+        run: python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_KEY }}
+
+      - name: Create and push tag
+        run: |
+          VERSION=$(grep -E '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          git tag "v${VERSION}"
+          git push origin "v${VERSION}"

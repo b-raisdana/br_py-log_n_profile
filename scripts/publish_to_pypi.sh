@@ -4,10 +4,18 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
+cd "${REPO_ROOT}"
+
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [[ "${CURRENT_BRANCH}" != "main" ]]; then
+    echo "ERROR: Must be on 'main' to release. Current branch: ${CURRENT_BRANCH}"
+    exit 1
+fi
+
 # Load .env
-if [[ -f "${REPO_ROOT}/.env" ]]; then
+if [[ -f ".env" ]]; then
     set -a
-    source "${REPO_ROOT}/.env"
+    source ".env"
     set +a
 else
     echo "ERROR: .env file not found at ${REPO_ROOT}/.env"
@@ -18,8 +26,6 @@ if [[ -z "${PYPI_API_KEY:-}" ]]; then
     echo "ERROR: PYPI_API_KEY is not set in .env"
     exit 1
 fi
-
-cd "${REPO_ROOT}"
 
 # Parse current version from pyproject.toml
 CURRENT_VERSION=$(grep -E '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
@@ -63,11 +69,45 @@ echo "Bumping version: ${CURRENT_VERSION} -> ${NEW_VERSION}"
 # Update pyproject.toml
 sed -i "s/^version = \".*\"/version = \"${NEW_VERSION}\"/" pyproject.toml
 
-# Update CHANGELOG.md
-TODAY=$(date +%Y-%m-%d)
-if ! grep -q "## \[${NEW_VERSION}\]" CHANGELOG.md; then
-    sed -i "s/^# Changelog$/# Changelog\n\n## [${NEW_VERSION}] - ${TODAY}\n\n### Added\n\n- \n\n### Changed\n\n- \n\n### Fixed\n\n- /" CHANGELOG.md
+# Generate changelog details from git log between last tag and HEAD
+LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+CHANGELOG_TMP=$(mktemp)
+if [[ -z "${LAST_TAG}" ]]; then
+    git log --oneline --graph --decorate > "${CHANGELOG_TMP}"
+else
+    git log --oneline --graph --decorate "${LAST_TAG}..HEAD" > "${CHANGELOG_TMP}"
 fi
+
+TODAY=$(date +%Y-%m-%d)
+
+# Update CHANGELOG.md
+python3 - <<PYEOF
+import re
+import sys
+
+with open('CHANGELOG.md', 'r') as f:
+    content = f.read()
+
+with open('${CHANGELOG_TMP}', 'r') as f:
+    log_body = f.read()
+
+new_version = "${NEW_VERSION}"
+today = "${TODAY}"
+
+new_section = f"## [{new_version}] - {today}\\n\\n### Added\\n\\n- \\n\\n### Changed\\n\\n- \\n\\n### Fixed\\n\\n- \\n\\n{log_body}"
+
+# Remove any existing section for this version
+pattern = rf'## \\[{re.escape(new_version)}\\] - .*?(?=\\n## \\[|$)'
+content = re.sub(pattern, '', content, flags=re.DOTALL)
+
+# Prepend new section after # Changelog
+content = content.replace('# Changelog', f'# Changelog\\n\\n{new_section}', 1)
+
+with open('CHANGELOG.md', 'w') as f:
+    f.write(content)
+PYEOF
+
+rm -f "${CHANGELOG_TMP}"
 
 # Run pre-commit checks (skip main-branch block for release automation)
 echo "Running pre-commit checks..."
@@ -99,6 +139,12 @@ python -m twine upload dist/* -u "__token__" -p "${PYPI_API_KEY}"
 git add pyproject.toml CHANGELOG.md
 git commit -m "chore: release v${NEW_VERSION}"
 git push origin main
+
+# Create and push tag
+TAG_NAME="v${NEW_VERSION}"
+echo "Creating tag ${TAG_NAME}..."
+git tag "${TAG_NAME}"
+git push origin "${TAG_NAME}"
 
 echo "Successfully published version ${NEW_VERSION} to PyPI"
 echo "View at: https://pypi.org/project/br-logging-and-profiling/${NEW_VERSION}/"
