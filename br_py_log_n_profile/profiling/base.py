@@ -10,6 +10,7 @@ from colorama import Fore
 from ..do_log.log_it import log_d
 
 
+# release 0.6.0
 def profile_it[**P, R](func: Callable[P, R]) -> Callable[P, R]:
     @wraps(func)
     def _measure_time(*args: P.args, **kwargs: P.kwargs) -> R:
