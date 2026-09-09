@@ -22,8 +22,14 @@ pip install br-logging-and-profiling
 
 ## Development
 
+Clone with submodules, or initialize the shared pre-commit tooling after cloning:
+
 ```bash
+git submodule update --init --recursive
 pip install -r requirements-dev.txt
-pre-commit install
+bash br_pre_commit/install.sh "$PWD"
+./pre-commit
 pytest -m unit
 ```
+
+The pre-commit gate runs strict mypy against `examples/`, including the `profile_it` type-preservation example.

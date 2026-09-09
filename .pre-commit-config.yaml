@@ -34,7 +34,14 @@ repos:
         language: system
         entry: python -m pytest -m unit
         pass_filenames: false
-        files: ^(br_py_log_n_profile/.*\.py|pytest\.ini)$
+        files: ^(br_py_log_n_profile/.*|tests/.*\.py|pytest\.ini|pyproject\.toml)$
+
+      - id: integration-tests
+        name: profile_it typing example
+        language: system
+        entry: python -m mypy --strict examples
+        pass_filenames: false
+        files: ^(br_py_log_n_profile/.*|examples/.*\.py|pyproject\.toml)$
 
       - id: no-commit-to-main
         name: block direct commits to main
