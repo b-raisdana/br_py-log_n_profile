@@ -8,5 +8,10 @@ def format_value(value: int, *, prefix: str = "value") -> str:
     return f"{prefix}={value}"
 
 
+@profile_it
+def format_value12(value: int, *, prefix: str = "value") -> str:
+    return f"{prefix}={value}"
+
+
 assert_type(format_value(3), str)
 assert_type(format_value(3, prefix="count"), str)
