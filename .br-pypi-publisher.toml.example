@@ -1,0 +1,21 @@
+# br_pypi_publisher configuration
+# Copy to .br-pypi-publisher.toml and customize
+
+[tool.br_pypi_publisher]
+# Branch to release from (default: "main")
+# release_branch = "main"
+
+# Package name for PyPI URL display
+# package_name = "my-package"
+
+# Custom changelog path (default: "CHANGELOG.md")
+# changelog_path = "CHANGELOG.md"
+
+# Skip pre-commit checks (not recommended)
+# skip_precommit = false
+
+# Custom build command (default: "python -m build")
+# build_command = "python -m build"
+
+# Custom twine upload command
+# twine_command = "twine upload dist/*"

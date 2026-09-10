@@ -1,3 +1,0 @@
-#!/bin/sh
-# Tracked source of truth for .git/hooks/pre-commit
-exec python scripts/git-hooks/precommit_wrapper.py

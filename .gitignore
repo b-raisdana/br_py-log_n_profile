@@ -30,3 +30,4 @@ logs/
 
 # Misc
 docker_volume/
+br_pypi_publisher/

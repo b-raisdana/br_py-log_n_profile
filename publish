@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+# Convenience script to run br_pypi_publisher
+exec "$(dirname "$0")/br_pypi_publisher/scripts/publish_to_pypi.sh" "$@"
