@@ -21,7 +21,7 @@ __log_to_std_out_level = logging.DEBUG
 __log_to_file_level = 0
 __min_log_level = __log_to_std_out_level
 
-__all__ = ["log_d", "log_e", "log_i", "log_w", "log_exception"]
+__all__ = ["configure", "log_d", "log_e", "log_i", "log_w", "log_exception"]
 
 _NAMED_LEVEL_THRESHOLDS = (
     (logging.CRITICAL, "CRITICAL"),
@@ -110,6 +110,20 @@ def _init_default_logger() -> None:
 
 
 _init_default_logger()
+NOT_TESTED = "Not tested!"
+_break_on_not_tested: bool = True
+
+
+def configure(*, break_on_not_tested: bool | None = None) -> None:
+    """Configure global settings for the logger.
+
+    Args:
+        break_on_not_tested: Whether to break on "Not tested!" warnings.
+            Defaults to True. Set to False to disable breakpoints.
+    """
+    global _break_on_not_tested
+    if break_on_not_tested is not None:
+        _break_on_not_tested = break_on_not_tested
 
 
 def log_d(message: str, stack_limit: int = 0, stack_offset: int = 0) -> None:
@@ -117,6 +131,9 @@ def log_d(message: str, stack_limit: int = 0, stack_offset: int = 0) -> None:
 
 
 def log_w(message: str, stack_limit: int = 0, stack_offset: int = 0) -> None:
+    if message == NOT_TESTED and _break_on_not_tested:
+        breakpoint()  # noqa: ERA001
+
     log(message, logging.WARNING, stack_limit, stack_offset + 1)
 
 

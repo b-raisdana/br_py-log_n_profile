@@ -3,11 +3,19 @@ from collections.abc import Callable
 from functools import wraps
 from inspect import signature
 
-import numpy as np
-import pandas as pd
 from colorama import Fore
 
 from ..do_log.log_it import log_d
+
+try:
+    import numpy as np
+except ImportError:  # pragma: no cover
+    np = None  # type: ignore[assignment]
+
+try:
+    import pandas as pd
+except ImportError:  # pragma: no cover
+    pd = None  # type: ignore[assignment]
 
 
 # release >0.5.1
@@ -45,16 +53,16 @@ def profile_it[**P, R](func: Callable[P, R]) -> Callable[P, R]:
 
 def parameters_to_str(args: tuple[object, ...], kwargs: dict[str, object]) -> str:
     def process_item(item: object) -> str:
-        if isinstance(item, pd.DataFrame):
+        if pd is not None and isinstance(item, pd.DataFrame):
             return f"{len(item)}*{item.columns}"
         elif isinstance(item, list):
-            try:
-                return f"list{np.array(item).shape}"
-            except ValueError as e:
-                raise e
-            except Exception as e:
-                raise e
-        elif isinstance(item, np.ndarray):
+            if np is not None:
+                try:
+                    return f"list{np.array(item).shape}"
+                except Exception:
+                    return f"list[{len(item)}]"
+            return f"list[{len(item)}]"
+        elif np is not None and isinstance(item, np.ndarray):
             return f"ndarray{item.shape}"
         elif isinstance(item, dict):
             return process_dict(item)
@@ -65,15 +73,16 @@ def parameters_to_str(args: tuple[object, ...], kwargs: dict[str, object]) -> st
         t_parameters: list[str] = []
         for key, value in d.items():
             if isinstance(value, list):
-                try:
-                    t_parameters.append(f"{key}: list{np.array(value).shape}")
-                except ValueError as e:
-                    raise e
-                except Exception as e:
-                    raise e
-            elif isinstance(value, pd.DataFrame):
+                if np is not None:
+                    try:
+                        t_parameters.append(f"{key}: list{np.array(value).shape}")
+                    except Exception:
+                        t_parameters.append(f"{key}: list[{len(value)}]")
+                else:
+                    t_parameters.append(f"{key}: list[{len(value)}]")
+            elif pd is not None and isinstance(value, pd.DataFrame):
                 t_parameters.append(f"{key}: {len(value)}*{value.columns}")
-            elif isinstance(value, np.ndarray):
+            elif np is not None and isinstance(value, np.ndarray):
                 t_parameters.append(f"{key}: ndarray{value.shape}")
             elif isinstance(value, dict):
                 t_parameters.append(f"{key}: {{ {process_dict(value)} }}")
