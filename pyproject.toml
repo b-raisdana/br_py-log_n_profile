@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "br-logging-and-profiling"
-version = "0.5.2"
+version = "0.6.5"
 dynamic = ["readme"]
 description = "Loguru-based logging facade, correlation IDs, and profiling decorator extracted from Forecasting-sidecar3."
 license = { text = "MIT" }
