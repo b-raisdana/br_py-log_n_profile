@@ -67,7 +67,7 @@ class InterceptHandler(logging.Handler):
 
 
 def _intercept_stdlib_logging() -> None:
-    logging.basicConfig(handlers=[InterceptHandler()], force=True)
+    logging.basicConfig(handlers=[InterceptHandler()], force=True, level=logging.DEBUG)
 
 
 def root_path(root_distance: int = 5) -> Path:
