@@ -197,7 +197,7 @@ Published `br-logging-and-profiling==0.1.0` to PyPI:
 
 ```bash
 cd br_py-log_n_profile
-python -m twine upload dist/*
+python -m twine upload "dist/*${VERSION}*"
 ```
 
 - PyPI project: https://pypi.org/project/br-logging-and-profiling/0.1.0/
