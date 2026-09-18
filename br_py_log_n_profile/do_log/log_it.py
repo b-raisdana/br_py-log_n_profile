@@ -3,6 +3,7 @@ import sys
 import traceback
 from pathlib import Path
 from types import FrameType
+from typing import NoReturn
 
 from colorama import Fore, Style
 from loguru import logger
@@ -150,7 +151,7 @@ def log_exception(
     exception_class: type[Exception],
     stack_limit: int = 0,
     stack_offset: int = 0,
-) -> Exception:
+) -> NoReturn:
     log_e(message, stack_limit, stack_offset + 1)
     raise exception_class(message)
 
