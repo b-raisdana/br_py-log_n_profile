@@ -132,8 +132,8 @@ def log_d(message: str, stack_limit: int = 0, stack_offset: int = 0) -> None:
 
 
 def log_w(message: str, stack_limit: int = 0, stack_offset: int = 0) -> None:
-    if message == NOT_TESTED and _break_on_not_tested:
-        breakpoint()  # noqa: ERA001
+    # if message == NOT_TESTED and _break_on_not_tested:
+    #     breakpoint()  # noqa: ERA001
 
     log(message, logging.WARNING, stack_limit, stack_offset + 1)
 
