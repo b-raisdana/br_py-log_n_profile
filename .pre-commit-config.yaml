@@ -51,7 +51,8 @@ repos:
     pass_filenames: false
     always_run: true
   - id: incremental-ratchet
-    name: incremental ratchet (mypy/ruff/xenon/loc - blocks regressions only, see README)
+    name: incremental ratchet (mypy/ruff/xenon/loc - blocks regressions only, see
+      README)
     language: system
     entry: python -m ratchet
     pass_filenames: false
