@@ -1,52 +1,58 @@
 exclude: ^tests/integration/.*\.py$
-
 ci:
   autofix_commits: true
   autoupdate_schedule: monthly
-
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
-    hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-      - id: check-yaml
-      - id: check-toml
-      - id: check-added-large-files
-        args: ["--maxkb=1024"]
-      - id: check-merge-conflict
-      - id: check-case-conflict
-      - id: debug-statements
-        exclude: br_py_log_n_profile/do_log/log_it.py
-      - id: mixed-line-ending
-        args: ["--fix=lf"]
-
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.2
-    hooks:
-      - id: ruff
-        args: ["--fix", "--exit-zero"]
-      - id: ruff-format
-
-  - repo: local
-    hooks:
-      - id: pytest-fast
-        name: pytest unit gate
-        language: system
-        entry: python -m pytest -m unit
-        pass_filenames: false
-        files: ^(br_py_log_n_profile/.*|tests/.*\.py|pytest\.ini|pyproject\.toml)$
-
-      - id: integration-tests
-        name: profile_it typing example
-        language: system
-        entry: python -m mypy --strict examples
-        pass_filenames: false
-        files: ^(br_py_log_n_profile/.*|examples/.*\.py|pyproject\.toml)$
-
-      - id: no-commit-to-main
-        name: block direct commits to main
-        language: system
-        entry: bash -c 'branch="$(git rev-parse --abbrev-ref HEAD)"; if [ "${SKIP_NO_COMMIT_TO_MAIN:-0}" = "1" ]; then exit 0; fi; if [ "$branch" = "main" ]; then echo "Direct commits to main are not allowed. Create a feature branch."; exit 1; fi'
-        pass_filenames: false
-        always_run: true
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: check-yaml
+  - id: check-toml
+  - id: check-added-large-files
+    args:
+    - --maxkb=1024
+  - id: check-merge-conflict
+  - id: check-case-conflict
+  - id: debug-statements
+    exclude: br_py_log_n_profile/do_log/log_it.py
+  - id: mixed-line-ending
+    args:
+    - --fix=lf
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.16.2
+  hooks:
+  - id: ruff
+    args:
+    - --fix
+    - --exit-zero
+  - id: ruff-format
+- repo: local
+  hooks:
+  - id: pytest-fast
+    name: pytest unit gate
+    language: system
+    entry: python -m pytest -m unit
+    pass_filenames: false
+    files: ^(br_py_log_n_profile/.*|tests/.*\.py|pytest\.ini|pyproject\.toml)$
+  - id: integration-tests
+    name: profile_it typing example
+    language: system
+    entry: python -m mypy --strict examples
+    pass_filenames: false
+    files: ^(br_py_log_n_profile/.*|examples/.*\.py|pyproject\.toml)$
+  - id: no-commit-to-main
+    name: block direct commits to main
+    language: system
+    entry: bash -c 'branch="$(git rev-parse --abbrev-ref HEAD)"; if [ "${SKIP_NO_COMMIT_TO_MAIN:-0}"
+      = "1" ]; then exit 0; fi; if [ "$branch" = "main" ]; then echo "Direct commits
+      to main are not allowed. Create a feature branch."; exit 1; fi'
+    pass_filenames: false
+    always_run: true
+  - id: incremental-ratchet
+    name: incremental ratchet (mypy/ruff/xenon/loc - blocks regressions only, see README)
+    language: system
+    entry: python -m ratchet
+    pass_filenames: false
+    files: ^src/.*\.py$
